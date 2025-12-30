@@ -2,14 +2,14 @@
 export default {
     siteConfig: {
         // 网站标题
-        title: '芙莉莲',
+        title: '(Re)汇源',
         // 个人头像
         avatar: '/avatar.webp',
         // 网站描述
         description: 'liuhuiyuan的博客',
 
         // 项目仓库地址
-        github: 'https://github.com/huiyuan33/monorepo',
+        github: 'https://github.com/huiyuan33/huiyuan_private_assets',
         // 代码仓库地址
         codeDir: '/docs/src',
     },

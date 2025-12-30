@@ -1,4 +1,6 @@
+// 开发环境基于模块使用
 import { Tree } from '@hyuan/browser-data-structure/src/index';
+// // 开发环境基于包使用,需要先构建出dist包
 // import { Tree } from '@hyuan/browser-data-structure';
 
 const nodes = {
@@ -40,21 +42,34 @@ const nodes = {
         {
             id: '2',
             name: '节点2',
-            children: [{ id: '2-1', name: '节点2-1', children: [] }],
+            children: [
+                {
+                    id: '2-1',
+                    name: '节点2-1',
+                    children: [],
+                },
+            ],
         },
         {
             id: '3',
             name: '节点3',
             children: [
-                { id: '3-1', name: '节点3-1', children: [] },
-                { id: '3-2', name: '节点3-2', children: [] },
+                {
+                    id: '3-1',
+                    name: '节点3-1',
+                    children: [],
+                },
+                {
+                    id: '3-2',
+                    name: '节点3-2',
+                    children: [],
+                },
             ],
         },
     ],
 };
 
-const t = new Tree(nodes);
-console.log(t);
+new Tree(nodes);
 
 // t.depthFirstTraversal((node) => {
 //     console.log(333, node.id);

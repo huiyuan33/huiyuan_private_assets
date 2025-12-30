@@ -11,4 +11,4 @@ node_modules
 .pprettierrc
 package-lock.json
 pnpm-lock.yaml
-
+index.html

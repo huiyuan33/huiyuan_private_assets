@@ -1,7 +1,10 @@
 const { defineFlatConfig } = require('eslint-define-config');
 
-const tsPlugin = require('@typescript-eslint/eslint-plugin');
-const tsParser = require('@typescript-eslint/parser');
+const {
+    parser: tsParser,
+    plugin: tsPlugin,
+    configs: tsConfigs,
+} = require('typescript-eslint');
 
 const jsRules = require('./src/jsRules.js');
 const tsRules = require('./src/tsRules.js');
@@ -9,8 +12,23 @@ const vueRules = require('./src/vueRules.js');
 
 module.exports = defineFlatConfig([
     require('eslint-plugin-prettier/recommended'),
+    ...tsConfigs.recommended,
     ...require('eslint-plugin-vue').configs['flat/essential'],
 
+    {
+        // 全局配置统一忽略目录
+        name: '@hyuan: global-ignore',
+        ignores: [
+            '**/{.vscode,build,dist,test}',
+            '**/node_modules',
+            '**/public',
+            '**/coverage',
+            '**/.cache',
+            '**/.temp',
+            '**/.prettierrc.{js,cjs,mjs}',
+            '**/eslint.config.{js,cjs,mjs}',
+        ],
+    },
     {
         name: '@hyuan: js&cjs-rules',
         files: ['**/*.{js,cjs}'],
@@ -27,8 +45,7 @@ module.exports = defineFlatConfig([
         languageOptions: {
             parser: tsParser,
         },
-        //  Object.assign({}, tsPlugin.configs.recommended.rules),
-        rules: tsRules,
+        rules: Object.assign({}, jsRules, tsRules),
         plugins: {
             '@typescript-eslint': tsPlugin,
         },
@@ -37,28 +54,13 @@ module.exports = defineFlatConfig([
         name: '@hyuan: vue-rules',
         files: ['**/*.vue'],
         languageOptions: {
-            parser: require('vue-eslint-parser'),
             parserOptions: {
                 parser: tsParser,
             },
         },
-        rules: Object.assign({}, tsRules, vueRules),
+        rules: Object.assign({}, jsRules, tsRules, vueRules),
         plugins: {
             '@typescript-eslint': tsPlugin,
         },
-    },
-    {
-        // 全局配置统一忽略目录
-        name: '@hyuan: global-ignore',
-        ignores: [
-            '**/{.vscode,build,dist,test}',
-            '**/node_modules',
-            '**/public',
-            '**/coverage',
-            '**/.cache',
-            '**/.temp',
-            '**/.prettierrc.{js,cjs,mjs}',
-            '**/eslint.config.{js,cjs,mjs}',
-        ],
     },
 ]);

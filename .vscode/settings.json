@@ -10,19 +10,18 @@
             "other": true,
             "comments": true,
             "strings": true
-        }
+        },
+        "editor.defaultFormatter": "mervin.markdown-formatter"
     },
     "files.exclude": {
-        ".vscode/extensions.json": true,
-        ".vscode/vue.json": true,
-        "**/node_modules": false,
+        ".vscode/vue*": true,
         "**/.gitignore": true,
         "**/.editorconfig": true,
         "**/.prettierrc.cjs": true,
         "**/.prettierignore": true,
         "**/.markdownlint.jsonc": true,
         "**/.npmrc": true,
-        "**/eslint.config.cjs": true,
+        // "**/eslint.config.cjs": true,
         "**/pnpm-lock.yaml": true,
         "**/.cache": true,
         "**/tsconfig.tsbuildinfo": true

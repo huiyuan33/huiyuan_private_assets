@@ -43,11 +43,11 @@ module.exports = {
     'consistent-this': [2, 'self'],
     'line-comment-position': 2,
     'max-depth': [2, 4],
-    'max-lines': [2, 300],
+    'max-lines': [2, 1000],
     'max-lines-per-function': [
         2,
         {
-            max: 100,
+            max: 200,
         },
     ],
     'max-statements-per-line': [

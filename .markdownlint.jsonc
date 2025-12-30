@@ -2,5 +2,6 @@
   "default": true,
   "MD001": false, // 关闭标题必须自增
   "MD013": false, // 关闭行长度限制
-  "MD033": false // 允许内联 HTML
+  "MD033": false, // 允许内联 HTML
+  "MD009": false,
 }

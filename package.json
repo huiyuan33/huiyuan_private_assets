@@ -1,35 +1,37 @@
 {
-  "name": "monorepo",
+  "name": "huiyuan_private_assets",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "commit": "git pull && git add . && gitmoji -c && git push",
-    "commit:partial": "git pull && gitmoji -c",
     "dev": "vite --host --port=3000",
-    "preview": "vite preview",
-    "lint": "vue-tsc --noEmit && eslint --fix .",
     "build": "pnpm lint && vite build",
+    "preview": "vite preview",
     "docs:dev": "pnpm --filter docs dev",
     "docs:build": "pnpm --filter docs build",
     "docs:preview": "pnpm --filter docs preview",
-    "lint:package": "pnpm --filter ./packages/* lint",
-    "build:package": "pnpm --filter ./packages/* build",
-    "eslint:check": "pnpm --filter eslint-config run check",
-    "eslint:report": "pnpm --filter eslint-config run report"
+    "package:lint": "pnpm --filter ./packages/* lint",
+    "package:build": "pnpm --filter ./packages/* build",
+    "lint": "vue-tsc --noEmit && eslint --fix .",
+    "lint:check": "pnpm --filter eslint-config run check",
+    "lint:report": "pnpm --filter eslint-config run report",
+    "commit:.": "git pull && git add . && gitmoji -c && git push",
+    "commit": "git pull && gitmoji -c"
+  },
+  "dependencies": {
+    "vue": "catalog:"
   },
   "devDependencies": {
+    "@hyuan/browser-data-structure": "workspace:",
+    "@hyuan/chalk": "workspace:",
     "@hyuan/eslint-config": "workspace:",
     "@hyuan/typescript-config": "workspace:",
-    "@hyuan/browser-data-structure": "workspace:",
-    "@hyuan/docs": "workspace:",
-    "@hyuan/chalk": "workspace:",
     "eslint": "catalog:",
     "gitmoji-cli": "catalog:",
     "prettier": "catalog:",
+    "typescript": "catalog:",
     "vite": "catalog:",
-    "vue-tsc": "catalog:",
-    "typescript": "catalog:"
+    "vue-tsc": "catalog:"
   },
   "author": "刘汇源",
   "license": "ISC"

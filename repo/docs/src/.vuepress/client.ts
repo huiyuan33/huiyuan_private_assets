@@ -23,7 +23,7 @@ export default defineClientConfig({
         onUpdated(initLogoURL);
     },
 
-    enhance({ router, app }) {
+    enhance({ router }) {
         router.beforeEach((to, from, next) => {
             if (to.path === '/') {
                 next(`/${config.proConfig.defaultLang}/blog/`);

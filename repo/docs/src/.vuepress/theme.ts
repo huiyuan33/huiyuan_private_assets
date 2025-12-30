@@ -5,6 +5,7 @@ import { navbar, sidebar } from './config/index';
 
 export default hopeTheme({
     darkmode: 'toggle',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     iconAssets: <any>config.proConfig.iconFontUrl,
 
     logo: config.siteConfig.avatar,
@@ -41,7 +42,8 @@ export default hopeTheme({
             },
 
             displayFooter: true,
-            footer: `MIT Licensed | Copyright © 2024-present <a href="/en/author/">${config.personConfig.author}</a>`,
+
+            footer: `MIT Licensed | Copyright © 2024-present <a href="/en/author/">${config.personConfig.author}</a> 陕ICP备2023021541号-1`,
             copyright: false,
         },
 
@@ -58,15 +60,15 @@ export default hopeTheme({
             },
 
             displayFooter: true,
-            footer: `MIT Licensed | Copyright © 2024-present <a href="/zh/author/">${config.personConfig.author}</a>`,
+            footer: `MIT Licensed | Copyright © 2024-present <a href="/zh/author/">${config.personConfig.author}</a> 陕ICP备2023021541号-1`,
             copyright: false,
         },
     },
 
     encrypt: {
         config: {
-            '/zh/blog/article/': [config.proConfig.articlePWord],
-            '/en/blog/article/': [config.proConfig.articlePWord],
+            // '/zh/blog/article/': [config.proConfig.articlePWord],
+            // '/en/blog/article/': [config.proConfig.articlePWord],
         },
     },
 

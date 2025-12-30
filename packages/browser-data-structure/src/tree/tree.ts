@@ -42,9 +42,9 @@ export class TreeNode<T extends DefaultTreeData = DefaultTreeData> {
     }
 }
 
-export class Tree<T extends DefaultTreeData = DefaultTreeData>
-    implements BaseTreeInterface
-{
+export class Tree<
+    T extends DefaultTreeData = DefaultTreeData,
+> implements BaseTreeInterface {
     public root: TreeNode<T> | null = null;
     public nodeMap = new Map<T['id'], TreeNode<T>>();
     private _chalk: Chalk;

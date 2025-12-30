@@ -3,8 +3,8 @@
  * 针对vue语法规则
  */
 module.exports = {
-    'vue/singleline-html-element-content-newline': 1,
-    'vue/multi-word-component-names': 0,
+    'vue/singleline-html-element-content-newline': 0,
+    'vue/multi-word-component-names': 2,
     'vue/html-indent': [
         1,
         4,
@@ -17,10 +17,10 @@ module.exports = {
         },
     ],
     'vue/html-closing-bracket-newline': [
-        1,
+        0,
         {
             singleline: 'never',
-            multiline: 'never',
+            multiline: 'always',
             selfClosingTag: {
                 singleline: 'never',
                 multiline: 'always',

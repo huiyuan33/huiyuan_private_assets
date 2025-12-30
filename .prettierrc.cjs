@@ -10,5 +10,5 @@ module.exports = {
     singleAttributePerLine: true,
     bracketSameLine: true,
     vueIndentScriptAndStyle: false,
-    experimentalTernaries: true,
+    experimentalTernaries: false,
 };

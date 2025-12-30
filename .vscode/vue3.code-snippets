@@ -1,0 +1,19 @@
+{
+    "Vue 3 Template": {
+        "prefix": "vue3",
+        "body": [
+            "<template>",
+            "    <div class=\"$1\">$2</div>",
+            "</template>",
+            "",
+            "<script setup lang=\"ts\">",
+            "import { ref, reactive, computed, nextTick, watch, onMounted } from \"vue\";",
+            "",
+            "$3",
+            "</script>",
+            "",
+            "<style scoped lang=\"less\">$4</style>",
+        ],
+        "description": "Vue 3 Single File Component Template",
+    },
+}

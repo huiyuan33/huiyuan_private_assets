@@ -7,9 +7,9 @@ class FireFly {
     public vh = 0;
     public ow = 0;
     public oh = 0;
-    public timer: any = null;
+    public timer: null | number = null;
 
-    public speedCoefficient: { [key in keyof CSSStyleDeclaration]?: any } = {
+    public speedCoefficient: { [key in keyof CSSStyleDeclaration]?: number } = {
         left: 0,
         top: 0,
     };
@@ -61,7 +61,7 @@ class FireFly {
                     this.speedCoefficient.top = this.genRandomNum(0, this.oh);
                     this.speedCoefficient.left = this.genRandomNum(0, this.ow);
                 } else {
-                    let offset = (randomOffset[attr] - currentValue) / 10000;
+                    let offset = (randomOffset[attr]! - currentValue) / 10000;
                     offset = offset > 0 ? Math.ceil(offset) : Math.floor(offset);
                     this.fire.style[attr] = currentValue + offset + 'px';
                 }

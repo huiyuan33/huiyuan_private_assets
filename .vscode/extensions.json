@@ -14,11 +14,8 @@
         "eamodio.gitlens",
         "editorconfig.editorconfig",
         "bierner.markdown-preview-github-styles",
-        "bierner.markdown-emoji",
         "bierner.emojisense",
-        "bierner.markdown-checkbox",
         "bierner.markdown-footnotes",
-        "bierner.markdown-mermaid",
         "mervin.markdown-formatter",
         "davidanson.vscode-markdownlint",
         "lokalise.i18n-ally"

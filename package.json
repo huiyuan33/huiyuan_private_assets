@@ -15,6 +15,7 @@
     "lint": "vue-tsc --noEmit && eslint --fix .",
     "lint:check": "pnpm --filter eslint-config run check",
     "lint:report": "pnpm --filter eslint-config run report",
+    "postinstall": "pnpm package:build",
     "commit:.": "git pull && git add . && gitmoji -c && git push",
     "commit": "git pull && gitmoji -c"
   },

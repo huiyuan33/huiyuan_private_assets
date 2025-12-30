@@ -14,6 +14,7 @@
         "editor.defaultFormatter": "mervin.markdown-formatter"
     },
     "files.exclude": {
+        ".github": true,
         ".vscode/vue*": true,
         "**/.gitignore": true,
         "**/.editorconfig": true,
@@ -26,6 +27,7 @@
         "**/.cache": true,
         "**/tsconfig.tsbuildinfo": true
     },
+    // 覆盖 VS Code 内置的 TypeScript 版本
     "typescript.tsdk": "node_modules\\typescript\\lib",
     "workbench.iconTheme": "vscode-icons",
     "workbench.colorTheme": "Monokai",
@@ -40,7 +42,6 @@
                 "${env:windir}\\Sysnative\\cmd.exe",
                 "${env:windir}\\System32\\cmd.exe"
             ],
-            "args": [],
             "icon": "terminal-cmd",
             "color": "terminal.ansiRed"
         },

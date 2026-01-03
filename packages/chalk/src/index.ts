@@ -4,43 +4,29 @@ import errorIcon from './icon/error.png';
 import eventIcon from './icon/event.png';
 import readyIcon from './icon/ready.png';
 
-type ChalkDefaultColorPrimary =
-    | '_black'
-    | '_white'
-    | '_red'
-    | '_yellow'
-    | '_green'
-    | '_blue'
-    | '_purple'
-    | '_lightYellow'
-    | '_lightGreen'
-    | '_lightBlue'
-    | '_lib'
-    | '_version';
-type ChalkDefaultLevel = 'log' | 'warn' | 'error' | 'event' | 'ready';
+enum ChalkDefaultColorConfig {
+    _black = '#000000',
+    _white = '#FFFFFF',
+    _red = '#FF0000',
+    _yellow = '#FFFF00',
+    _green = '#008000',
+    _blue = '#0000FF',
+    _purple = '#A020F0',
+    _lightYellow = '#FFFFE0',
+    _lightGreen = '#90EE90',
+    _lightBlue = '#9BD0E1',
+    _lib = '#606060',
+    _version = '#42c02e',
+}
+type ChalkDefaultColorPrimary = keyof typeof ChalkDefaultColorConfig;
+type ChalkColorPrimary<C> = C | ChalkDefaultColorPrimary;
 
-type ChalkColorPrimary<T extends string = ChalkDefaultColorPrimary> =
-    | T
-    | ChalkDefaultColorPrimary;
-
-type ChalkLevel<Level extends string = ChalkDefaultLevel> =
-    | Level
-    | ChalkDefaultLevel;
-
-type ChalkLevelConf<ColorPrimary extends string = ChalkDefaultColorPrimary> = {
-    colorPrimay: ChalkDefaultColorPrimary | ColorPrimary;
+const chalkDefaultLogType = <const>['log', 'warn', 'error', 'event', 'ready'];
+type ChalkDefaultLogType = (typeof chalkDefaultLogType)[number];
+type ChalkLogType<T> = T | ChalkDefaultLogType;
+type ChalkLogTypeConfig<C = ChalkDefaultColorPrimary> = {
+    colorPrimay: C | ChalkDefaultColorPrimary;
     icon?: string;
-};
-
-type ChalkImageConfig = {
-    width: number;
-    height: number;
-};
-
-type ChalkVersionConfig<T extends string = ChalkDefaultColorPrimary> = {
-    name: string;
-    color?: T | ChalkDefaultColorPrimary;
-    bgColor?: T | ChalkDefaultColorPrimary;
 };
 
 type ChalkHeartConfig<T extends string = ChalkDefaultColorPrimary> = {
@@ -51,86 +37,238 @@ type ChalkHeartConfig<T extends string = ChalkDefaultColorPrimary> = {
     padding: [number, number];
 };
 
+type ChalkImageConfig = {
+    width: number;
+    height: number;
+};
+
 /**
- * C: 用于扩展颜色
- * L: 用于扩展日志类型
+ * T: 用于扩展Chalk内置日志类型
+ * C: 用于扩展Chalk内置颜色
  */
 export class Chalk<
-    C extends { [key: string]: string } = {
-        [key in ChalkDefaultColorPrimary]: string;
-    },
-    L extends string = ChalkLevel,
+    T extends string = ChalkDefaultLogType,
+    C extends string = ChalkDefaultColorPrimary,
 > {
-    public colorMap = new Map<
-        Extract<keyof C, string> | ChalkDefaultColorPrimary,
-        string
-    >();
-    public levelMap = new Map<
-        ChalkLevel<L>,
-        ChalkLevelConf<ChalkColorPrimary<Extract<keyof C, string>>>
-    >();
+    private _colorMap = new Map<ChalkColorPrimary<C>, string>();
+    private _logTypeMap = new Map<ChalkLogType<T>, ChalkLogTypeConfig<C>>();
+
     private _cached = {
         images: new Map<string, string>(),
     };
 
-    constructor(colors?: C) {
-        // 初始化成员变量
-        this._init();
-        if (colors) {
-            Object.keys(colors).forEach((key) => {
-                if (key.startsWith('_')) {
-                    this.log(
-                        'error',
-                        `${key} config failed, you can't start with _ !`,
+    constructor() {
+        this._initDefaultConfig();
+    }
+
+    // 初始化默认配置
+    _initDefaultConfig() {
+        // 内置默认颜色配置
+        Object.keys(ChalkDefaultColorConfig).forEach((key) => {
+            this._colorMap.set(
+                <ChalkDefaultColorPrimary>key,
+                ChalkDefaultColorConfig[<ChalkDefaultColorPrimary>key],
+            );
+        });
+        // 内置日志配置
+        this._initLogTypeConfig();
+    }
+
+    // 配置默认日志
+    _initLogTypeConfig() {
+        chalkDefaultLogType.forEach((item) => {
+            switch (item) {
+                case 'log':
+                    this.setLogType('log', {
+                        colorPrimay: '_black',
+                        icon: logIcon,
+                    });
+                    break;
+                case 'warn':
+                    this.setLogType('warn', {
+                        colorPrimay: '_purple',
+                        icon: warnIcon,
+                    });
+                    break;
+                case 'ready':
+                    this.setLogType('ready', {
+                        colorPrimay: '_green',
+                        icon: readyIcon,
+                    });
+                    break;
+                case 'event':
+                    this.setLogType('event', {
+                        colorPrimay: '_blue',
+                        icon: eventIcon,
+                    });
+                    break;
+                case 'error':
+                    this.setLogType('error', {
+                        colorPrimay: '_red',
+                        icon: errorIcon,
+                    });
+                    break;
+            }
+        });
+    }
+
+    async _beautifyMsg(
+        type: ChalkLogType<T>,
+        msg: string,
+        logConf: ChalkLogTypeConfig<C>,
+    ) {
+        if (logConf.icon) {
+            // 加载图片
+            const url = await this._loadImage(logConf.icon);
+            this._consoleMsg(type, msg, logConf, url);
+        } else {
+            this._consoleMsg(type, msg, logConf);
+        }
+    }
+
+    // 支持base64以及网络路径图片
+    _loadImage(url: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const iconMap = this._cached.images;
+            // base64图片
+            if (url.startsWith('data:image')) {
+                return resolve(url);
+            }
+            // 缓存处理
+            if (iconMap.has(url)) {
+                return resolve(<string>this._cached.images.get(url));
+            }
+
+            // 网络图片
+            fetch(url)
+                .then(async (res) => {
+                    if (res.status === 200 && res.body) {
+                        const fileReader = new FileReader();
+                        const blob = await res.blob();
+
+                        if (blob && blob.type.includes('image/')) {
+                            fileReader.readAsDataURL(blob);
+                            fileReader.onload = (e) => {
+                                if (e.target?.result) {
+                                    // 进行缓存
+                                    iconMap.set(url, <string>e.target.result);
+                                    resolve(<string>e.target.result);
+                                } else {
+                                    resolve('');
+                                }
+                            };
+                            fileReader.onerror = (err) => {
+                                reject(err);
+                            };
+                        }
+                    }
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        });
+    }
+
+    _consoleMsg(
+        type: ChalkLogType<T>,
+        msg: string,
+        logConf: ChalkLogTypeConfig<C>,
+        imageUrl?: string,
+    ) {
+        const cb = console.log;
+        if (imageUrl) {
+            cb(
+                `%c %c [${type[0].toUpperCase() + type.slice(1)}]: %c${msg}`,
+                `
+                    padding: 3px;
+                    background-image: url(${imageUrl});
+                    background-repeat: no-repeat;
+                    background-size: contain;
+                    background-position: center;
+                `,
+                `
+                    color: ${this._reflectColor(logConf.colorPrimay)};
+                `,
+                `
+                    color: ${this._reflectColor(logConf.colorPrimay)};
+                `,
+            );
+        } else {
+            cb(
+                `%c  %c [${type[0].toUpperCase() + type.slice(1)}]: %c${msg}`,
+                ``,
+                `
+                    color: ${this._reflectColor(logConf.colorPrimay)};
+                `,
+                `
+                    color: ${this._reflectColor(logConf.colorPrimay)};
+                `,
+            );
+        }
+    }
+
+    async _drawImage(url: string, config: ChalkImageConfig) {
+        const dataUri = await this._loadImage(url);
+        if (dataUri) {
+            const img = new Image();
+            img.src = url;
+            img.crossOrigin = 'anonymous';
+
+            img.addEventListener('load', () => {
+                const w = config.width || img.width,
+                    h = config.height || img.height;
+                // 进行canvas绘制
+                const c = document.createElement('canvas');
+                const ctx = c.getContext('2d');
+                if (ctx) {
+                    c.width = w;
+                    c.height = h;
+                    ctx.drawImage(img, 0, 0, w, h);
+
+                    const target = c.toDataURL('image/png');
+                    console.log(
+                        `%c `,
+                        `   
+                            padding: ${w / 2}px ${h / 2}px;
+                            background: url(${target}) no-repeat center;
+                        `,
                     );
-                } else {
-                    this.colorMap.set(<Extract<keyof C, string>>key, colors[key]);
                 }
             });
         }
     }
 
+    _reflectColor(primary: ChalkColorPrimary<C>) {
+        return this._colorMap.get(primary);
+    }
+
     /**
-     * 配置日志类型对应的配置
-     *
+     * 配置自定义日志类型
      * @param type 日志类型
-     * @param conf 日志配置
+     * @param conf 打印样式配置
      */
-    setLevelConf(
-        type: ChalkLevel<L>,
-        conf: ChalkLevelConf<Extract<keyof C, string>>,
-    ) {
+    setLogType(type: ChalkLogType<T>, conf: ChalkLogTypeConfig<C>) {
         if (type && conf) {
-            this.levelMap.set(type, conf);
+            this._logTypeMap.set(type, conf);
         }
     }
 
     /**
-     * 更改颜色配置,不支持添加
-     *
+     * 修改colorPrimary对应的色值
      * @param primary
      * @param color
      */
-    updateColor(
-        primary: ChalkColorPrimary<Extract<keyof C, string>>,
-        color: string,
-    ) {
+    updateColorPrimary(primary: ChalkColorPrimary<C>, color: string) {
         if (primary && color) {
-            if (this.colorMap.has(primary)) {
-                this.colorMap.set(primary, color);
+            if (this._colorMap.has(primary)) {
+                this._colorMap.set(primary, color);
             }
         }
     }
 
-    /**
-     * 输出特定类型的日志
-     *
-     * @param type 日志类型
-     * @param msg  日志内容
-     */
-    log(type: ChalkLevel<L>, msg: string) {
+    log(type: ChalkLogType<T>, msg: string) {
         if (msg && type) {
-            const levelConf = this.levelMap.get(type);
+            const levelConf = this._logTypeMap.get(type);
             if (levelConf) {
                 this._beautifyMsg(type, msg, levelConf);
             } else {
@@ -145,33 +283,28 @@ export class Chalk<
     }
 
     /**
-     * 输出不同颜色的字
+     * 输出包名以及对应版本号
      *
-     * @param msgs
-     * {
-     *    msg: {
-     *      color: 'colorPrimary',
-     *      bgColor: 'colorPrimary',
-     *    },
-     *    ...
-     * }
+     * @param lib       包名
+     * @param version   包版本
      */
-    msg(msgs: {
-        [key: string]: Required<
-            Pick<ChalkVersionConfig<Extract<keyof C, string>>, 'color'>
-        > & { background?: ChalkColorPrimary<Extract<keyof C, string>> };
-    }) {
-        if (msgs && typeof msgs === 'object') {
-            const arr = [''];
-            Object.keys(msgs).forEach((msg) => {
-                arr[0] += `%c${msg}`;
-                const style = Object.entries(msgs[msg]).map(([key, value]) => {
-                    return `${key}:${this._reflectPrimaryColor(value)};`;
-                });
-                arr.push(style.join(''));
-            });
-            console.log(...arr);
-        }
+    version(lib: string, version: string) {
+        console.log(
+            `%c ${lib} %c V${version} `,
+            `
+                padding: 2px 1px; 
+                border-radius: 3px 0 0 3px; 
+                color: ${this._reflectColor('_white')}; 
+                background: ${this._reflectColor('_lib')}; 
+                font-weight: bold;`,
+            `
+                padding: 2px 1px; 
+                border-radius: 0 3px 3px 0; 
+                color: ${this._reflectColor('_white')}; 
+                background: ${this._reflectColor('_version')}; 
+                font-weight: bold;
+            `,
+        );
     }
 
     /**
@@ -197,95 +330,17 @@ export class Chalk<
         }
     }
 
-    /**
-     * 输出包以及对应版本号
-     *
-     * @param lib       包配置
-     * @param version   版本配置
-     */
-    version(
-        lib: string | ChalkVersionConfig<Extract<keyof C, string>>,
-        version: string | ChalkVersionConfig<Extract<keyof C, string>>,
-    ) {
-        const libC: Required<ChalkVersionConfig<Extract<keyof C, string>>> = {
-            name: typeof lib === 'object' ? lib.name : lib,
-            color:
-                typeof lib === 'object'
-                    ? lib.color
-                        ? lib.color
-                        : '_white'
-                    : '_white',
-            bgColor:
-                typeof lib === 'object'
-                    ? lib.bgColor
-                        ? lib.bgColor
-                        : '_lib'
-                    : '_lib',
+    hearts(word: string, config: Partial<ChalkHeartConfig<C>> = {}) {
+        const { fontSize, padding, color, bgColor, heartColor } = {
+            color: config.color ? this._reflectColor(config.color) : '#fff',
+            bgColor: config.bgColor ? this._reflectColor(config.bgColor) : '#b03',
+            heartColor: config.heartColor
+                ? this._reflectColor(config.heartColor)
+                : '#d35',
+            fontSize: config.fontSize ?? 20,
+            padding: config.padding ?? [12, 20],
         };
 
-        const verC: Required<ChalkVersionConfig<Extract<keyof C, string>>> = {
-            name: typeof version === 'object' ? version.name : version,
-            color:
-                typeof version === 'object'
-                    ? version.color
-                        ? version.color
-                        : '_white'
-                    : '_white',
-            bgColor:
-                typeof version === 'object'
-                    ? version.bgColor
-                        ? version.bgColor
-                        : '_version'
-                    : '_version',
-        };
-
-        console.log(
-            `%c ${libC.name} %c V${verC.name} `,
-            `
-                padding: 2px 1px; 
-                border-radius: 3px 0 0 3px; 
-                color: ${this._reflectPrimaryColor(libC.color)}; 
-                background: ${this._reflectPrimaryColor(libC.bgColor)}; 
-                font-weight: bold;`,
-            `
-                padding: 2px 1px; 
-                border-radius: 0 3px 3px 0; 
-                color: ${this._reflectPrimaryColor(verC.color)}; 
-                background: ${this._reflectPrimaryColor(verC.bgColor)}; 
-                font-weight: bold;
-            `,
-        );
-    }
-
-    hearts(
-        word: unknown,
-        config: Partial<ChalkHeartConfig<Extract<keyof C, string>>> = {},
-    ) {
-        const defaultConfig = {
-            color: '#fff',
-            bgColor: '#b03',
-            heartColor: '#d35',
-            fontSize: 24,
-            padding: [10, 40],
-        };
-        if (typeof config) {
-            Object.keys(config).forEach((key) => {
-                const newKey = <keyof ChalkHeartConfig<Extract<keyof C, string>>>key;
-                if (
-                    newKey === 'color' ||
-                    newKey === 'bgColor' ||
-                    newKey === 'heartColor'
-                ) {
-                    defaultConfig[newKey] = this._reflectPrimaryColor(
-                        config[newKey]!,
-                    );
-                } else {
-                    defaultConfig[newKey] = <any>config[newKey];
-                }
-            });
-        }
-
-        const { fontSize, padding, color, bgColor, heartColor } = defaultConfig;
         console.log(
             `%c${word}`,
             `
@@ -329,189 +384,5 @@ export class Chalk<
                 background-size: 100px 100px;
             `,
         );
-    }
-
-    _init() {
-        const defaultColors: { [key in ChalkDefaultColorPrimary]: string } = {
-            _black: '#00000',
-            _white: '#FFFFFF',
-            _red: '#FF0000',
-            _yellow: '#FFFF00',
-            _green: '#008000',
-            _blue: '#0000FF',
-            _purple: '#A020F0',
-            _lightYellow: '#FFFFE0',
-            _lightGreen: '#90EE90',
-            _lightBlue: '#0000FF',
-            _lib: '#606060',
-            _version: '#42c02e',
-        };
-        Object.keys(defaultColors).forEach((key) => {
-            this.colorMap.set(
-                <ChalkDefaultColorPrimary>key,
-                defaultColors[<ChalkDefaultColorPrimary>key],
-            );
-        });
-
-        const defaultLevel: { [key in ChalkLevel]: ChalkLevelConf } = {
-            log: {
-                colorPrimay: '_black',
-                icon: logIcon,
-            },
-            event: {
-                colorPrimay: '_blue',
-                icon: eventIcon,
-            },
-            warn: {
-                colorPrimay: '_purple',
-                icon: warnIcon,
-            },
-            error: {
-                colorPrimay: '_red',
-                icon: errorIcon,
-            },
-            ready: {
-                colorPrimay: '_green',
-                icon: readyIcon,
-            },
-        };
-        Object.keys(defaultLevel).forEach((key) => {
-            this.levelMap.set(<ChalkLevel>key, defaultLevel[<ChalkLevel>key]);
-        });
-    }
-
-    async _beautifyMsg(
-        type: ChalkLevel<L>,
-        msg: string,
-        logConf: ChalkLevelConf<Extract<keyof C, string> | ChalkDefaultColorPrimary>,
-    ) {
-        if (logConf.icon) {
-            // 加载图片
-            const url = await this._loadImage(logConf.icon);
-            this._consoleMsg(type, msg, logConf, url);
-        } else {
-            this._consoleMsg(type, msg, logConf);
-        }
-    }
-
-    // 支持base64以及网络路径图片
-    async _loadImage(url: string): Promise<string> {
-        return new Promise((resolve, reject) => {
-            const iconMap = this._cached.images;
-            // base64图片
-            if (url.startsWith('data:image')) {
-                return resolve(url);
-            }
-            // 缓存处理
-            if (iconMap.has(url)) {
-                return resolve(<string>this._cached.images.get(url));
-            }
-
-            // 网络图片
-            fetch(url)
-                .then(async (res) => {
-                    if (res.status === 200 && res.body) {
-                        const fileReader = new FileReader();
-                        const blob = await res.blob();
-
-                        if (blob && blob.type.includes('image/')) {
-                            fileReader.readAsDataURL(blob);
-                            fileReader.onload = (e) => {
-                                if (e.target?.result) {
-                                    // 进行缓存
-                                    iconMap.set(url, <string>e.target.result);
-                                    resolve(<string>e.target.result);
-                                } else {
-                                    resolve('');
-                                }
-                            };
-                            fileReader.onerror = (err) => {
-                                reject(err);
-                            };
-                        }
-                    }
-                })
-                .catch((err) => {
-                    reject(err);
-                });
-        });
-    }
-
-    _consoleMsg(
-        type: ChalkLevel<L>,
-        msg: string,
-        logConf: ChalkLevelConf<Extract<keyof C, string> | ChalkDefaultColorPrimary>,
-        imageUrl?: string,
-    ) {
-        const cb = console.log;
-        if (imageUrl) {
-            cb(
-                `%c %c [${type[0].toUpperCase() + type.slice(1)}]: %c${msg}`,
-                `
-                    padding: 3px;
-                    background-image: url(${imageUrl});
-                    background-repeat: no-repeat;
-                    background-size: contain;
-                    background-position: center;
-                `,
-                `
-                    color: ${this._reflectPrimaryColor(logConf.colorPrimay)};
-                `,
-                `
-                    color: ${this._reflectPrimaryColor(logConf.colorPrimay)};
-                `,
-            );
-        } else {
-            cb(
-                `%c  %c [${type[0].toUpperCase() + type.slice(1)}]: %c${msg}`,
-                ``,
-                `
-                    color: ${this._reflectPrimaryColor(logConf.colorPrimay)};
-                `,
-                `
-                    color: ${this._reflectPrimaryColor(logConf.colorPrimay)};
-                `,
-            );
-        }
-    }
-
-    async _drawImage(url: string, config: ChalkImageConfig) {
-        const dataUri = await this._loadImage(url);
-        if (dataUri) {
-            const img = new Image();
-            img.src = url;
-            img.crossOrigin = 'anonymous';
-
-            img.addEventListener('load', () => {
-                const w = config.width || img.width,
-                    h = config.height || img.height;
-                // 进行canvas绘制
-                const c = document.createElement('canvas');
-                const ctx = c.getContext('2d');
-                if (ctx) {
-                    c.width = w;
-                    c.height = h;
-                    ctx.drawImage(img, 0, 0, w, h);
-                    this._resolveImage(ctx, config);
-
-                    const target = c.toDataURL('image/png');
-                    console.log(
-                        `%c `,
-                        `   
-                            padding: ${w / 2}px ${h / 2}px;
-                            background: url(${target}) no-repeat center;
-                        `,
-                    );
-                }
-            });
-        }
-    }
-
-    _resolveImage(ctx: CanvasRenderingContext2D, config: ChalkImageConfig) {}
-
-    _reflectPrimaryColor(
-        primary: Extract<keyof C, string> | ChalkDefaultColorPrimary,
-    ) {
-        return this.colorMap.get(primary) || '';
     }
 }

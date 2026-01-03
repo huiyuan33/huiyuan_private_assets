@@ -11,7 +11,7 @@
             "comments": true,
             "strings": true
         },
-        "editor.defaultFormatter": "mervin.markdown-formatter"
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "files.exclude": {
         ".github": true,

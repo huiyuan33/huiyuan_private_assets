@@ -12,11 +12,7 @@ module.exports = [
     // 适用当前项目配置,规则优先级最高
     {
         name: 'huiyuan_private_assets: config',
-        ignores: [
-            'packages/eslint-config',
-            'packages/browser-data-structure',
-            'packages/chalk',
-        ],
+        ignores: ['packages/eslint-config'],
     },
     {
         name: 'huiyuan_private_assets: rules',

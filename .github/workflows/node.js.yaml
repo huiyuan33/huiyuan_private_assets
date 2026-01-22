@@ -27,8 +27,8 @@ jobs:
           cache: 'pnpm'
 
       # run build script
-      - run: pnpm install
-      - run: pnpm docs:build
+      - run: pnpm install --ignore-scripts
+      - run: pnpm build:docs
 
       - name: Deploy docs to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

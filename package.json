@@ -8,7 +8,7 @@
     "build": "pnpm lint && vite build",
     "preview": "vite preview",
     "dev:docs": "pnpm --filter docs dev",
-    "build:docs:": "pnpm --filter docs build",
+    "build:docs": "pnpm --filter docs build",
     "preview:docs": "pnpm --filter docs preview",
     "build:package": "pnpm --filter ./packages/* build",
     "lint": "vue-tsc --noEmit && eslint .",

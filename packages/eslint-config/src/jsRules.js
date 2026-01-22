@@ -10,7 +10,7 @@ module.exports = {
     'no-async-promise-executor': 2,
     'no-compare-neg-zero': 2,
     'no-cond-assign': 2,
-    'no-console': 1,
+    'no-console': 0,
     'no-constant-condition': 2,
     'no-debugger': 1,
     'no-dupe-keys': 2,

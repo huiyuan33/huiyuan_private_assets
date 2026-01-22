@@ -1,5 +1,6 @@
 // 开发环境基于模块使用
 import { Tree } from '@hyuan/browser-data-structure/src/index';
+import { Heap } from '@hyuan/browser-data-structure/src/index';
 // // 开发环境基于包使用,需要先构建出dist包
 // import { Tree } from '@hyuan/browser-data-structure';
 

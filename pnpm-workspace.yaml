@@ -28,14 +28,13 @@ catalogs:
     '@rollup/plugin-node-resolve': 16.0.0
 
   eslint-config:
-    eslint-define-config: ^2.1.0
     eslint-plugin-prettier: ^5.2.1
     eslint-config-prettier: ^9.1.0
     typescript-eslint: ^8.2.0
     eslint-plugin-vue: ^9.27.0
     '@eslint/config-inspector': 0.5.4
 
-  vue-press:
+  docs:
     vuepress: 2.0.0-rc.18
     vuepress-theme-hope: 2.0.0-rc.59
     sass-embedded: 1.80.3

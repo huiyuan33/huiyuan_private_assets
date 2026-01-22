@@ -17,11 +17,11 @@
     "vue-tsc": "catalog:",
     "typescript": "catalog:",
     "vue": "catalog:",
-    "vuepress": "catalog:vue-press",
-    "vuepress-theme-hope": "catalog:vue-press",
-    "sass-embedded": "catalog:vue-press",
-    "@vuepress/bundler-vite": "catalog:vue-press",
-    "flowchart.ts": "catalog:vue-press",
-    "@vue/repl": "catalog:vue-press"
+    "vuepress": "catalog:docs",
+    "vuepress-theme-hope": "catalog:docs",
+    "sass-embedded": "catalog:docs",
+    "@vuepress/bundler-vite": "catalog:docs",
+    "flowchart.ts": "catalog:docs",
+    "@vue/repl": "catalog:docs"
   }
 }

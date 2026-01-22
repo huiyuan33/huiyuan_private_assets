@@ -1,4 +1,4 @@
-const { defineFlatConfig } = require('eslint-define-config');
+const { defineConfig } = require('eslint/config');
 
 const {
     parser: tsParser,
@@ -10,7 +10,7 @@ const jsRules = require('./src/jsRules.js');
 const tsRules = require('./src/tsRules.js');
 const vueRules = require('./src/vueRules.js');
 
-module.exports = defineFlatConfig([
+module.exports = defineConfig([
     require('eslint-plugin-prettier/recommended'),
     ...tsConfigs.recommended,
     ...require('eslint-plugin-vue').configs['flat/essential'],

@@ -1,6 +1,4 @@
 import logIcon from './icon/log.png';
-import warnIcon from './icon/warn.png';
-import errorIcon from './icon/error.png';
 import eventIcon from './icon/event.png';
 import readyIcon from './icon/ready.png';
 
@@ -50,6 +48,9 @@ export class Chalk<
     T extends string = ChalkDefaultLogType,
     C extends string = ChalkDefaultColorPrimary,
 > {
+    public packageName = '';
+
+    private _disabled = false;
     private _colorMap = new Map<ChalkColorPrimary<C>, string>();
     private _logTypeMap = new Map<ChalkLogType<T>, ChalkLogTypeConfig<C>>();
 
@@ -57,8 +58,33 @@ export class Chalk<
         images: new Map<string, string>(),
     };
 
-    constructor() {
+    constructor(packageName = '') {
+        this.packageName = packageName;
         this._initDefaultConfig();
+
+        return new Proxy(this, {
+            get(target, key) {
+                const msgFunction = ['log', 'version', 'image', 'hearts'];
+                if (msgFunction.includes(<string>key)) {
+                    return function (...args: string[]) {
+                        if (!target._disabled) {
+                            const func = Reflect.get(target, key);
+                            if (typeof func === 'function') {
+                                func.apply(target, args);
+                            }
+                        }
+                    };
+                }
+            },
+            set(target) {
+                // 禁止一切覆写
+                target.log(
+                    'error',
+                    'operation failed, chalk toolkit does not allow modification of any properties at runtime.',
+                );
+                return false;
+            },
+        });
     }
 
     // 初始化默认配置
@@ -80,14 +106,14 @@ export class Chalk<
             switch (item) {
                 case 'log':
                     this.setLogType('log', {
-                        colorPrimay: '_black',
+                        colorPrimay: '_blue',
                         icon: logIcon,
                     });
                     break;
                 case 'warn':
                     this.setLogType('warn', {
-                        colorPrimay: '_purple',
-                        icon: warnIcon,
+                        colorPrimay: '_black',
+                        icon: '',
                     });
                     break;
                 case 'ready':
@@ -98,14 +124,14 @@ export class Chalk<
                     break;
                 case 'event':
                     this.setLogType('event', {
-                        colorPrimay: '_blue',
+                        colorPrimay: '_purple',
                         icon: eventIcon,
                     });
                     break;
                 case 'error':
                     this.setLogType('error', {
-                        colorPrimay: '_red',
-                        icon: errorIcon,
+                        colorPrimay: '_black',
+                        icon: '',
                     });
                     break;
             }
@@ -173,38 +199,38 @@ export class Chalk<
         type: ChalkLogType<T>,
         msg: string,
         logConf: ChalkLogTypeConfig<C>,
-        imageUrl?: string,
+        iconUrl?: string,
     ) {
-        const cb = console.log;
-        if (imageUrl) {
-            cb(
-                `%c %c [${type[0].toUpperCase() + type.slice(1)}]: %c${msg}`,
-                `
+        const err = console.error;
+        const warn = console.warn;
+
+        const cb = type === 'warn' ? warn : type === 'error' ? err : console.log;
+
+        cb(
+            iconUrl
+                ? `%c %c [${this.packageName ? this.packageName + ' ' : ''}${type[0].toUpperCase() + type.slice(1)}]: %c${msg}`
+                : `%c%c[${this.packageName ? this.packageName + ' ' : ''}${type[0].toUpperCase() + type.slice(1)}]: %c${msg}`,
+            iconUrl
+                ? `
                     padding: 3px;
-                    background-image: url(${imageUrl});
+                    background-image: url(${iconUrl});
+                    background-repeat: no-repeat;
+                    background-size: contain;
+                    background-position: center;
+                `
+                : `
+                    padding: 3px;
                     background-repeat: no-repeat;
                     background-size: contain;
                     background-position: center;
                 `,
-                `
+            `
                     color: ${this._reflectColor(logConf.colorPrimay)};
                 `,
-                `
+            `
                     color: ${this._reflectColor(logConf.colorPrimay)};
                 `,
-            );
-        } else {
-            cb(
-                `%c  %c [${type[0].toUpperCase() + type.slice(1)}]: %c${msg}`,
-                ``,
-                `
-                    color: ${this._reflectColor(logConf.colorPrimay)};
-                `,
-                `
-                    color: ${this._reflectColor(logConf.colorPrimay)};
-                `,
-            );
-        }
+        );
     }
 
     async _drawImage(url: string, config: ChalkImageConfig) {
@@ -264,6 +290,10 @@ export class Chalk<
                 this._colorMap.set(primary, color);
             }
         }
+    }
+
+    close(disabled = true) {
+        this._disabled = Boolean(disabled);
     }
 
     log(type: ChalkLogType<T>, msg: string) {
